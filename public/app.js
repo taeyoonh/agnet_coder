@@ -94,7 +94,7 @@ function toggleForm(disabled) {
 function renderHistory() {
   if (state.history.length === 0) {
     historyEl.innerHTML =
-      "<p class=\"empty\">아직 대화가 없습니다. 요구 사항을 입력해 보세요.</p>";
+      "<p class=\"empty\">No conversation yet. Enter a requirement to get started.</p>";
     return;
   }
   historyEl.innerHTML = state.history

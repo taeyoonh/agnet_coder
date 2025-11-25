@@ -1,5 +1,3 @@
-"""OpenAI API client wrapper for hosted GPT-style models."""
-
 from __future__ import annotations
 
 import os
@@ -9,24 +7,24 @@ from typing import Iterable, List, Sequence
 from openai import OpenAI
 
 from .simple_messages import BaseMessage
-from .pipeline_utils import serialize_message
+from .pipeline_utils import debug_log_messages, serialize_message
 
 
 @dataclass(slots=True)
 class OpenAIClientConfig:
-    # 기본 모델: gpt-5-mini
+    # Default model: gpt-5-mini
     model: str = os.getenv("OPENAI_MODEL", "gpt-5-mini")
     api_key: str | None = os.getenv("OPENAI_API_KEY")
     base_url: str | None = os.getenv("OPENAI_BASE_URL")
 
-    # 공통 옵션
+    # Shared options
     temperature: float | None = (
         float(os.getenv("OPENAI_TEMPERATURE"))
         if os.getenv("OPENAI_TEMPERATURE") is not None
         else None
     )
 
-    # chat.completions 전용 (비-reasoning 모델용)
+    # chat.completions only 
     max_completion_tokens: int = int(
         os.getenv("OPENAI_MAX_COMPLETION_TOKENS", os.getenv("OPENAI_MAX_TOKENS", "2048"))
     )
@@ -41,12 +39,14 @@ class OpenAIChatClient:
         self.client = OpenAI(api_key=self.config.api_key, base_url=self.config.base_url)
 
     def chat(self, messages: Iterable[BaseMessage]) -> str:
-        serialized = [serialize_message(msg) for msg in messages]
+        message_list = list(messages)
+        debug_log_messages(message_list, header="openai chat")
+        serialized = [serialize_message(msg) for msg in message_list]
 
 
         return self._call_chat_endpoint(serialized)
 
-    # ---------- chat.completions (비-reasoning 모델) ----------
+    # ---------- chat.completions ----------
 
     def _call_chat_endpoint(self, serialized_messages: Sequence[dict]) -> str:
         kwargs = {

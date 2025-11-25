@@ -1,5 +1,3 @@
-"""Shared prompts and helper utilities for the agent pipelines."""
-
 from __future__ import annotations
 
 import os
@@ -31,6 +29,24 @@ You are the final reviewer. Give a concise summary of the final plan, list the c
 - Always ensure the code block is complete and end the message with `<END-OF-CODE>`.
 """.strip()
 
+EXECUTION_REPAIR_SYSTEM_PROMPT = """
+You are a Python engineer who iterates with real execution feedback.
+- Always respond with one concise explanation paragraph followed by a single Python code block.
+- Rewrite the full solution each round; do not rely on previous code being present.
+- The final line of your message must be `<END-OF-CODE>`.
+- Expect to receive failing test logs or tracebacks; use them to fix bugs aggressively.
+""".strip()
+
+SELF_TEST_SYSTEM_PROMPT = """
+You are a Python engineer who must write both the solution and your own executable tests.
+- Output exactly two Python code blocks:
+  1) Full solution implementation (define the required function).
+  2) Self-tests with a `def run_tests(): ...` that calls asserts; include `if __name__ == "__main__": run_tests()`.
+- Keep explanations short (one paragraph) before the code blocks.
+- End your entire message with `<END-OF-CODE>`.
+- Tests must be specific and minimally sufficient; avoid flaky or randomized cases.
+""".strip()
+
 
 SINGLE_AGENT_SYSTEM_PROMPT = """
 You are a helpful Python coding assistant. Read the latest user message (plus any brief history), describe your plan at a high level, then output one complete Python solution and end with `<END-OF-CODE>`.
@@ -39,6 +55,7 @@ You are a helpful Python coding assistant. Read the latest user message (plus an
 
 MAX_RECENT_TURNS = int(os.getenv("AGENT_RECENT_TURNS", "6"))
 SUMMARY_CHAR_LIMIT = int(os.getenv("AGENT_HISTORY_SUMMARY_CHARS", "1200"))
+PROMPT_DEBUG = os.getenv("AGENT_PROMPT_DEBUG", "1").lower() not in ("0", "false", "no")
 
 
 def coerce_content(value) -> str:
@@ -73,7 +90,7 @@ def summarize_history(history: List[Dict[str, str]], limit: int = SUMMARY_CHAR_L
     consumed = 0
     for entry in history:
         role = entry.get("role", "user")
-        speaker = "에이전트" if role == "assistant" else "사용자"
+        speaker = "Agent" if role == "assistant" else "User"
         content = (entry.get("content") or "").strip()
         if not content:
             continue
@@ -95,7 +112,26 @@ def summarize_history(history: List[Dict[str, str]], limit: int = SUMMARY_CHAR_L
     if not lines:
         return ""
 
-    return "이전 대화 요약:\n" + "\n".join(lines)
+    return "Previous conversation summary:\n" + "\n".join(lines)
+
+
+def debug_log_messages(messages: List[BaseMessage], header: str = "") -> None:
+    """Print prompts to stdout when AGENT_PROMPT_DEBUG is enabled."""
+    if not PROMPT_DEBUG:
+        return
+    title = f"[prompt] {header}".strip() or "[prompt]"
+    print(title)
+    for idx, message in enumerate(messages, start=1):
+        role = (
+            "system"
+            if isinstance(message, SystemMessage)
+            else "user"
+            if isinstance(message, HumanMessage)
+            else "assistant"
+        )
+        content = coerce_content(message.content).strip()
+        print(f"  {idx:02d}. ({role}) {content}")
+    print("-" * 40, flush=True)
 
 
 def build_conversation(history: List[Dict[str, str]] | None, message: str) -> List[BaseMessage]:
@@ -125,7 +161,7 @@ def build_conversation(history: List[Dict[str, str]] | None, message: str) -> Li
 def dialogue_transcript(messages: List[BaseMessage]) -> str:
     parts: List[str] = []
     for msg in messages:
-        role = "사용자" if isinstance(msg, HumanMessage) else "에이전트"
+        role = "User" if isinstance(msg, HumanMessage) else "Agent"
         parts.append(f"{role}: {coerce_content(msg.content).strip()}")
     return "\n".join(parts)
 
@@ -135,20 +171,20 @@ def extract_headline(markdown: str) -> Tuple[str, str]:
     for line in lines:
         if line.startswith("### "):
             headline = line.removeprefix("### ").strip()
-            return headline or "AI 코드 플랜", markdown
-    return "AI 코드 플랜", markdown
+            return headline or "AI Code Plan", markdown
+    return "AI Code Plan", markdown
 
 
 def render_response(headline: str, draft1: str, draft2: str, final: str) -> str:
     sections = [
-        f"### {headline or 'AI 코드 플랜'}",
+        f"### {headline or 'AI Code Plan'}",
     ]
     if draft1:
-        sections.append("**코더1 출력**\n" + draft1.strip())
+        sections.append("**Coder1 Output**\n" + draft1.strip())
     if draft2:
-        sections.append("**코더2 출력**\n" + draft2.strip())
+        sections.append("**Coder2 Output**\n" + draft2.strip())
     if final:
-        sections.append("**코더3 요약**\n" + final.strip())
+        sections.append("**Coder3 Summary**\n" + final.strip())
     return "\n\n".join(sections).strip()
 
 
@@ -156,6 +192,8 @@ __all__ = [
     "CODER1_SYSTEM_PROMPT",
     "CODER2_SYSTEM_PROMPT",
     "CODER3_SYSTEM_PROMPT",
+    "EXECUTION_REPAIR_SYSTEM_PROMPT",
+    "SELF_TEST_SYSTEM_PROMPT",
     "SINGLE_AGENT_SYSTEM_PROMPT",
     "MAX_RECENT_TURNS",
     "SUMMARY_CHAR_LIMIT",

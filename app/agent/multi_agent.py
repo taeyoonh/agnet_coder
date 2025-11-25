@@ -1,5 +1,3 @@
-"""Reusable LangGraph-powered multi-stage agent."""
-
 from __future__ import annotations
 
 from typing import Dict, List, TypedDict
@@ -80,7 +78,11 @@ Rules:
 - Do not repeat code blocks with the same content.
 - Avoid unnecessarily lengthy explanations; focus on the core logic and test ideas.
 - The very last line of your response must be <END-OF-CODE>.
-                    사용자 요구사항 및 대화:\n{dialogue}\n\n첫 번째 해결책을 제시하세요."""),
+
+User requirements and dialogue:
+{dialogue}
+
+Provide the first solution."""),
         ]
         draft1 = self.client.chat(prompts)
         return {"draft1": draft1}
@@ -132,12 +134,14 @@ Rules:
 - Do not resubmit code that is identical to coder1's.
 - It is acceptable to completely overhaul the code structure.
 - The very last line of your response must be <END-OF-CODE>.
-                    """
-                    "사용자 요구사항과 대화:\n"
-                    f"{dialogue}\n\n"
-                    "coder1 응답:\n"
-                    f"{draft1}\n\n"
-                    "위 코드를 검증하고 필요한 경우 더 나은 전체 코드를 다시 작성하세요."
+                    
+User requirements and dialogue:
+{dialogue}
+
+coder1 response:
+{draft1}
+
+Verify the code above and rewrite a better complete solution if needed."""
                 )
             ),
         ]
@@ -210,14 +214,18 @@ Rules:
 - If any part is ambiguous, modify it to be "more conservative and clear" than coder2's code.
 - You must use exactly one code block.
 - The entire response must be within 150 lines.
-- The very last line of your response must be <END-OF-CODE>."""
-                    "사용자와의 대화 기록:\n"
-                    f"{dialogue}\n\n"
-                    "coder1 응답:\n"
-                    f"{draft1}\n\n"
-                    "coder2 응답:\n"
-                    f"{draft2}\n\n"
-                    "위 정보를 바탕으로 최종 검증/리팩터링 결과를 작성하세요."
+- The very last line of your response must be <END-OF-CODE>.
+
+Conversation history:
+{dialogue}
+
+coder1 response:
+{draft1}
+
+coder2 response:
+{draft2}
+
+Use the information above to deliver the final verification/refactoring result."""
                 )
             ),
         ]

@@ -13,8 +13,8 @@ from urllib.parse import parse_qs, urlparse
 
 try:
     from dotenv import load_dotenv
-except ModuleNotFoundError:  # pragma: no cover - optional dependency
-    def load_dotenv(*_args, **_kwargs):  # type: ignore[override]
+except ModuleNotFoundError: 
+    def load_dotenv(*_args, **_kwargs): 
         return False
 
 from agent import ENGINE_ALIAS_MAP, agent_reply, agent_stream, normalize_engine_name
@@ -39,7 +39,7 @@ class AgentHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(PUBLIC_DIR), **kwargs)
 
-    def log_message(self, fmt: str, *args) -> None:  # noqa: D401
+    def log_message(self, fmt: str, *args) -> None:  
         """Silence default stdout logging to keep CLI tidy."""
         return
 
@@ -57,19 +57,18 @@ class AgentHandler(SimpleHTTPRequestHandler):
         super().end_headers()
         self.wfile.write(data)
 
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:  
         if self.path.startswith("/api/agent-stream"):
             return self._handle_agent_stream()
         return super().do_GET()
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None: 
         if self.path == "/api/session":
             return self._handle_session()
         if self.path == "/api/agent":
             return self._handle_agent()
         self._json_response({"error": "Route not found"}, HTTPStatus.NOT_FOUND)
 
-    # --- Handlers -----------------------------------------------------------
 
     def _handle_session(self) -> None:
         payload = _read_body(self)
@@ -106,13 +105,12 @@ class AgentHandler(SimpleHTTPRequestHandler):
         engine_choice = requested_engine or session.get("engine")
         try:
             agent_message = agent_reply(message, history, engine=engine_choice)
-        except Exception as exc:  # pragma: no cover - defensive
+        except Exception as exc: 
             self._json_response(
                 {"error": f"Agent failed: {exc}"}, HTTPStatus.INTERNAL_SERVER_ERROR
             )
             return
 
-        # 히스토리에는 너무 긴 assistant 응답을 그대로 넣지 않고 잘라서 저장
         session["history"].append({"role": "user", "content": message})
         assistant_content = (agent_message.get("body") or "")[:1200]
         session["history"].append({"role": "assistant", "content": assistant_content})
@@ -148,7 +146,7 @@ class AgentHandler(SimpleHTTPRequestHandler):
                 self._sse_write(event)
         except BrokenPipeError:
             return
-        except Exception as exc:  # pragma: no cover - defensive
+        except Exception as exc:  
             self._sse_write({"stage": "error", "content": f"Agent failed: {exc}"})
         finally:
             if final_body:
@@ -167,7 +165,7 @@ class AgentHandler(SimpleHTTPRequestHandler):
 
 def run(host: str = "127.0.0.1", port: int = 8000) -> None:
     server = ThreadingHTTPServer((host, port), AgentHandler)
-    print(f"🌐 Agent UI running at http://{host}:{port}")
+    print(f"Agent UI running at http://{host}:{port}")
     server.serve_forever()
 
 

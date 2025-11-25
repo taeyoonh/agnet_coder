@@ -1,5 +1,3 @@
-"""HTTP client wrapper for local llama.cpp server."""
-
 from __future__ import annotations
 
 import os
@@ -10,7 +8,7 @@ import requests
 
 from .simple_messages import BaseMessage
 
-from .pipeline_utils import serialize_message
+from .pipeline_utils import debug_log_messages, serialize_message
 
 
 @dataclass(slots=True)
@@ -32,10 +30,11 @@ class LlamaServerClient:
     def __init__(self, config: LlamaServerConfig | None = None) -> None:
         self.config = config or LlamaServerConfig()
 
-        print("[llama] max_tokens =", self.config.max_tokens)  # 디버그용 한 줄
+        print("[llama] max_tokens =", self.config.max_tokens)  # Debug helper line
 
 
     def chat(self, messages: Iterable[BaseMessage]) -> str:
+        debug_log_messages(list(messages), header="llama chat")
         payload = {
             "model": self.config.model,
             "temperature": self.config.temperature,
@@ -44,8 +43,8 @@ class LlamaServerClient:
             "stop": list(self.config.stop),
 
 
-            "cache_prompt": False,  # 이전 프롬프트 캐시 재사용 X
-            "n_keep": 0,            # KV 캐시에 남겨둘 토큰 0
+            "cache_prompt": False,  # Do not reuse cached prompts from previous requests
+            "n_keep": 0,            # Keep zero tokens in the KV cache
 
             
             "messages": [serialize_message(msg) for msg in messages],

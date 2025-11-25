@@ -10,6 +10,14 @@ ENGINE_ALIAS_MAP = {
     "local_single": ".engine_local_single",
     "api_multi": ".engine_api_multi",
     "api_single": ".engine_api_single",
+    "local_exec": ".engine_local_exec",
+    "local-exec": ".engine_local_exec",
+    "api_exec": ".engine_api_exec",
+    "api-exec": ".engine_api_exec",
+    "local_selftest": ".engine_local_selftest",
+    "local-selftest": ".engine_local_selftest",
+    "api_selftest": ".engine_api_selftest",
+    "api-selftest": ".engine_api_selftest",
 }
 
 _ENGINE_CACHE: Dict[str, ModuleType] = {}

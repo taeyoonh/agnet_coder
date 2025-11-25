@@ -17,23 +17,27 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 try:
     from dotenv import load_dotenv
-except ModuleNotFoundError:  # pragma: no cover - optional dependency
-    def load_dotenv(*_args, **_kwargs):  # type: ignore[override]
+except ModuleNotFoundError:  
+    def load_dotenv(*_args, **_kwargs): 
         return False
 
 load_dotenv()
 
-# Ensure repository root is importable when running as "python app/run_bench.py"
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-# Map CLI-friendly names to the engine modules that expose agent_reply()
+
 ENGINE_MODULES = {
     "local-multi": "app.agent.engine_local_multi",
     "local-single": "app.agent.engine_local_single",
     "api-multi": "app.agent.engine_api_multi",
     "api-single": "app.agent.engine_api_single",
+    "local-exec": "app.agent.engine_local_exec",
+    "api-exec": "app.agent.engine_api_exec",
+    "local-selftest": "app.agent.engine_local_selftest",
+    "api-selftest": "app.agent.engine_api_selftest",
 }
 
 CODE_BLOCK_RE = re.compile(r"```(?P<lang>[^\n]*)\n(?P<code>.*?)```", re.DOTALL)
@@ -70,14 +74,14 @@ def load_tasks(path: Path) -> List[Task]:
     return tasks
 
 
-def load_agent(engine_name: str) -> Callable[[str], Dict[str, str]]:
+def load_agent(engine_name: str) -> Callable[..., Dict[str, str]]:
     module_name = ENGINE_MODULES.get(engine_name)
     if not module_name:
         raise ValueError(f"Unknown engine '{engine_name}'. Choices: {', '.join(ENGINE_MODULES)}")
     module = importlib.import_module(module_name)
     if not hasattr(module, "agent_reply"):
         raise AttributeError(f"{module_name} is missing agent_reply()")
-    return module.agent_reply  # type: ignore[return-value]
+    return module.agent_reply  
 
 
 def extract_code_block(markdown: str, preferred_language: Optional[str]) -> Optional[str]:
@@ -126,9 +130,10 @@ def write_results(path: Path, results: Iterable[Dict[str, object]]) -> None:
 
 def run_suite(
     tasks: List[Task],
-    agent: Callable[[str], Dict[str, str]],
+    agent: Callable[..., Dict[str, str]],
     engine_name: str,
     output_path: Path,
+    label: str = "",
 ) -> None:
     results: List[Dict[str, object]] = []
     total = len(tasks)
@@ -145,11 +150,11 @@ def run_suite(
         code_block = None
 
         try:
-            response = agent(task.prompt)
+            response = agent(task.prompt, task=task)
             elapsed = time.perf_counter() - started
             body = response.get("body", "")
             headline = response.get("headline", "")
-        except Exception as exc:  # pragma: no cover - defensive
+        except Exception as exc:  
             elapsed = time.perf_counter() - started
             body = ""
             headline = ""
@@ -183,6 +188,7 @@ def run_suite(
         result = {
             "task_id": task.task_id,
             "engine": engine_name,
+            "label": label,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "elapsed_sec": round(elapsed, 3),
             "success": success,
@@ -228,6 +234,12 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
         default=Path("results/latest.jsonl"),
         help="Where to store newline-delimited JSON results.",
     )
+    parser.add_argument(
+        "--label",
+        type=str,
+        default="",
+        help="Optional run label stored in each result row (e.g., pipeline or experiment name).",
+    )
     return parser.parse_args(argv)
 
 
@@ -237,7 +249,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     if args.limit:
         tasks = tasks[: args.limit]
     agent = load_agent(args.engine)
-    run_suite(tasks, agent, args.engine, args.output)
+    run_suite(tasks, agent, args.engine, args.output, label=args.label)
 
 
 if __name__ == "__main__":

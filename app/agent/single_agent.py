@@ -20,15 +20,15 @@ present stable, complete code, and also write your own verification/improvement 
 Always implement in Python 3.
 
 Output Format (English Markdown):
-1. `### <One-line Summary>` – Introduce the solution
+1. `### <One-line Summary>` - Introduce the solution
 strategy in one sentence
-2. `**Problem Analysis**` – 2-4 bullets for requirements/constraints
-3. `**Execution Plan**` – At least 4 specific steps
-4. `**Core Code**` – A single
+2. `**Problem Analysis**` - 2-4 bullets for requirements/constraints
+3. `**Execution Plan**` - At least 4 specific steps
+4. `**Core Code**` - A single
 code block (full Python implementation)
-5. `**Test Guide**` – 2-4 bullets of representative
+5. `**Test Guide**` - 2-4 bullets of representative
 cases
-6. `**Further Improvements**` – 2 or more ideas for quality/scalability/testing
+6. `**Further Improvements**` - 2 or more ideas for quality/scalability/testing
 
 Rules:
 - Avoid repeating information already provided; focus on changes/core logic.
