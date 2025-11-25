@@ -68,6 +68,17 @@ The runner stores newline-delimited JSON outputs (success, elapsed seconds,
 checker logs, raw responses) so you can compute aggregate metrics later. Use
 `--limit N` for smoke tests.
 
+### Common run commands (short)
+- Local execution agent (no toolchain, just codegen + checker):  
+  `python app/run_bench.py --engine local-exec --label exec-loop --output results/exec.jsonl`
+- Local self-test agent (agent writes/runs its own tests):  
+  `python app/run_bench.py --engine local-selftest --tasks benchmarks/tasks.jsonl --output results/english_selftest.jsonl`
+- API self-test (OpenAI):  
+  `python app/run_bench.py --engine api-selftest --tasks benchmarks/tasks.jsonl --output results/english_selftest_api.jsonl`
+- Smoke run first 5 tasks:  
+  `python app/run_bench.py --engine local-multi --limit 5`
+- Default output path (if omitted): `results/latest.jsonl`
+
 ## Next steps
 
 1. Add LangGraph subgraphs for tool selection + retrieval augmented planning.
