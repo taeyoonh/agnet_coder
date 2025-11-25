@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Agent Coding Coach</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="hero">
+        <div>
+          <h1>AI Agent Coding Coach</h1>
+          <p>
+            Prototype interface for planning an AI assisted coding service. Provide
+            a high level requirement and the rule-based agent will outline stack,
+            plan, and integration next-steps.
+          </p>
+        </div>
+        <div class="status" id="status">Booting agent…</div>
+      </section>
+      <section class="panel">
+        <div class="history" id="history"></div>
+        <form id="prompt-form">
+          <label for="prompt">Describe the feature or research task</label>
+          <textarea id="prompt" name="prompt" rows="5" placeholder="예) Next.js 기반으로 AI 코드 리뷰 도구 MVP 설계"></textarea>
+          <div class="actions">
+            <button type="submit">Generate plan</button>
+          </div>
+        </form>
+      </section>
+    </main>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,122 @@
+:root {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+}
+
+main.layout {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero {
+  background: white;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.hero h1 {
+  margin: 0 0 0.5rem;
+}
+
+.status {
+  font-size: 0.9rem;
+  color: #0f766e;
+  align-self: flex-start;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  min-width: 140px;
+  text-align: center;
+}
+
+.panel {
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  padding: 2rem;
+}
+
+.history {
+  min-height: 260px;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background: #f8fafc;
+  overflow-y: auto;
+}
+
+.history-entry {
+  margin-bottom: 1.25rem;
+}
+
+.history-entry h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.history-entry pre {
+  white-space: pre-wrap;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+}
+
+form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+textarea {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  padding: 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+button {
+  background: #0ea5e9;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  padding: 0.8rem 1.6rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    flex-direction: column;
+  }
+}
